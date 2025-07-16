@@ -10,10 +10,10 @@ app.use(express.json());
 
 const pool = new Pool({
   user: "postgres",
-  host: "localhost",
+  host: "192.168.8.166",
   database: "Impresoras",
-  password: "1234",
-  port: 5433,
+  password: "123",
+  port: 5432,
 });
 
 app.post("/api/impresoras", async (req, res) => {
@@ -30,23 +30,34 @@ app.post("/api/impresoras", async (req, res) => {
   }
 });
 
-// OID para tóner negro
-const OID_TONER_NEGRO = "1.3.6.1.2.1.43.11.1.1.9.1.1";
+// OIDs SNMP comunes para impresoras
+const OID_TONER_NEGRO = "1.3.6.1.2.1.43.11.1.1.9.1.1"; // Tóner negro
+const OID_NUMERO_SERIE = "1.3.6.1.2.1.43.5.1.1.17.1"; // Número de serie
+const OID_CONTADOR_IMPRESIONES = "1.3.6.1.2.1.43.10.2.1.4.1.1"; // Contador de páginas
 
 function consultarToner(ip) {
   return new Promise((resolve) => {
     const session = snmp.createSession(ip, "public", { timeout: 2000 });
+    const oids = [OID_TONER_NEGRO, OID_NUMERO_SERIE, OID_CONTADOR_IMPRESIONES];
 
-    session.get([OID_TONER_NEGRO], (error, varbinds) => {
-      if (
-        error ||
-        !varbinds ||
-        varbinds[0].type === snmp.ObjectType.NoSuchInstance
-      ) {
-        resolve({ toner: null, error: true });
+    session.get(oids, (error, varbinds) => {
+      if (error || !varbinds) {
+        resolve({
+          toner: null,
+          contador: null,
+          numero_serie: null,
+          error: true,
+        });
       } else {
-        const value = varbinds[0].value;
-        resolve({ toner: value, error: false });
+        const toner = varbinds[0]?.value ?? null;
+        const numero_serie = varbinds[1]?.value?.toString() ?? null;
+        const contador = varbinds[2]?.value ?? null;
+        resolve({
+          toner,
+          numero_serie,
+          contador,
+          error: false,
+        });
       }
       session.close();
     });
@@ -103,10 +114,13 @@ app.get("/api/toners", async (req, res) => {
         return {
           ...impresora,
           toner: resultado.toner,
+          contador: resultado.contador, // 👈 Agregado
+          numero_serie: resultado.numero_serie, // 👈 Agregado
           error: resultado.error,
         };
       })
     );
+
     app.delete("/api/impresoras/:id", async (req, res) => {
       const { id } = req.params;
 

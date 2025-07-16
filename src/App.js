@@ -19,7 +19,7 @@ function App() {
   const [infoModal, setInfoModal] = useState({ visible: false, data: null });
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/toners")
+    fetch("http://192.168.8.166:3001/api/toners")
       .then((res) => res.json())
       .then((data) => setImpresoras(data.impresoras || []))
       .catch((err) => console.error("Error al obtener datos:", err));
@@ -34,8 +34,8 @@ function App() {
 
     const method = editingId ? "PUT" : "POST";
     const url = editingId
-      ? `http://localhost:3001/api/impresoras/${editingId}`
-      : "http://localhost:3001/api/impresoras";
+      ? `http://192.168.8.166:3001/api/impresoras/${editingId}`
+      : "http://192.168.8.166:3001/api/impresoras";
 
     try {
       await fetch(url, {
@@ -63,7 +63,7 @@ function App() {
   const handleDelete = async (id) => {
     if (window.confirm("¿Estás seguro que deseas eliminar esta impresora?")) {
       try {
-        await fetch(`http://localhost:3001/api/impresoras/${id}`, {
+        await fetch(`http://192.168.8.166:3001/api/impresoras/${id}`, {
           method: "DELETE",
         });
         // Volvés a cargar la lista

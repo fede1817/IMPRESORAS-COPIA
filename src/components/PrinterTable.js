@@ -1,10 +1,16 @@
-import React from 'react';
-import TonerBar from './TonerBar';
+import React from "react";
+import TonerBar from "./TonerBar";
 
-export default function PrinterTable({ impresoras, tipo, onEdit, onDelete, onInfo }) {
+export default function PrinterTable({
+  impresoras,
+  tipo,
+  onEdit,
+  onDelete,
+  onInfo,
+}) {
   return (
     <>
-      <h2>Impresoras {tipo === 'principal' ? 'Principales' : 'Backup'}</h2>
+      <h2>Impresoras {tipo === "principal" ? "Principales" : "Backup"}</h2>
       <table className="dark-table">
         <thead>
           <tr>
@@ -17,33 +23,59 @@ export default function PrinterTable({ impresoras, tipo, onEdit, onDelete, onInf
           </tr>
         </thead>
         <tbody>
-          {impresoras.filter(i => i.tipo === tipo).map((impresora, index) => (
-            <tr key={`${tipo}-${index}`}>
-              <td>
-                <a href={`http://${impresora.ip}`} target="_blank" rel="noopener noreferrer">
-                  {impresora.ip}
-                </a>
-              </td>
-              <td>{impresora.sucursal}</td>
-              <td>
-                <a href={impresora.drivers_url} target="_blank" rel="noopener noreferrer">
-                  {impresora.modelo}
-                </a>
-              </td>
-              <td>
-                <TonerBar value={impresora.toner} />
-              </td>
-              <td>
-                <button className="info-button" onClick={() => onInfo(impresora)} title="Ver información">ℹ</button>
-              </td>
-              <td>
-                <div className="action-buttons">
-                  <button className="edit-btn" onClick={() => onEdit(impresora)}>Editar</button>
-                  <button className="delete-btn" onClick={() => onDelete(impresora.id)}>Eliminar</button>
-                </div>
-              </td>
-            </tr>
-          ))}
+          {impresoras
+            .filter((i) => i.tipo === tipo)
+            .map((impresora, index) => (
+              <tr key={`${tipo}-${index}`}>
+                <td>
+                  <a
+                    href={`http://${impresora.ip}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {impresora.ip}
+                  </a>
+                </td>
+                <td>{impresora.sucursal}</td>
+                <td>
+                  <a
+                    href={impresora.drivers_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {impresora.modelo}
+                  </a>
+                </td>
+                <td>
+                  <TonerBar value={impresora.toner} />
+                </td>
+                <td>
+                  <button
+                    className="info-button"
+                    onClick={() => onInfo(impresora)}
+                    title="Ver información"
+                  >
+                    ℹ
+                  </button>
+                </td>
+                <td>
+                  <div className="action-buttons">
+                    <button
+                      className="edit-btn"
+                      onClick={() => onEdit(impresora)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => onDelete(impresora.id)}
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
         </tbody>
       </table>
     </>

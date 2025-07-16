@@ -1,8 +1,8 @@
-import React from 'react';
-import { X } from 'lucide-react'; // Asegurate de tener instalado lucide-react
+import React from "react";
+import { X } from "lucide-react"; // Asegurate de tener instalado lucide-react
 export default function InfoModal({ visible, data, onClose }) {
   if (!visible || !data) return null;
-
+  console.log("contador" + data.contador);
   return (
     <div className="info-modal-overlay">
       <div className="info-modal-content">
@@ -13,11 +13,30 @@ export default function InfoModal({ visible, data, onClose }) {
           </button>
         </div>
         <div className="info-modal-body">
-          <p><strong>Sucursal:</strong> {data.sucursal}</p>
-          <p><strong>Modelo:</strong> {data.modelo}</p>
-          <p><strong>Tipo:</strong> {data.tipo}</p>
-           <p><strong>Último cambio de tóner:</strong> {data.fecha_ultimo_cambio ? new Date(data.fecha_ultimo_cambio).toLocaleString() : 'N/A'}</p>
-          <p><strong>Tóner de reserva:</strong> {data.toner_reserva || 0}</p>
+          <p>
+            <strong>Sucursal:</strong> {data.sucursal}
+          </p>
+          <p>
+            <strong>Modelo:</strong> {data.modelo}
+          </p>
+          <p>
+            <strong>Tipo:</strong> {data.tipo}
+          </p>
+          <p>
+            <strong>Contador:</strong> {data?.contador ?? "N/A"}
+          </p>
+          <p>
+            <strong>Número de Serie:</strong> {data?.numero_serie || "N/A"}
+          </p>
+          <p>
+            <strong>Último cambio de tóner:</strong>{" "}
+            {data.fecha_ultimo_cambio
+              ? new Date(data.fecha_ultimo_cambio).toLocaleString()
+              : "N/A"}
+          </p>
+          <p>
+            <strong>Tóner de reserva:</strong> {data.toner_reserva || 0}
+          </p>
         </div>
       </div>
     </div>
