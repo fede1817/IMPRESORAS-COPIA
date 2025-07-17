@@ -10,7 +10,6 @@ export default function PrinterTable({
 }) {
   return (
     <>
-      <h2>Impresoras {tipo === "principal" ? "Principales" : "Backup"}</h2>
       <table className="dark-table">
         <thead>
           <tr>

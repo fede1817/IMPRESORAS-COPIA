@@ -20,6 +20,7 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [infoModal, setInfoModal] = useState({ visible: false, data: null });
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
+  const [tablaActiva, setTablaActiva] = useState("principal");
 
   // ✅ Función para cargar impresoras
   const fetchImpresoras = (showMessage = false) => {
@@ -182,24 +183,44 @@ function App() {
       <button className="add-btn" onClick={() => setShowModal(true)}>
         ➕Agregar impresora
       </button>
+      <div className="tab-column-header">
+        <div
+          className={`tab-column ${
+            tablaActiva === "principal" ? "active" : ""
+          }`}
+          onClick={() => setTablaActiva("principal")}
+        >
+          Principales
+        </div>
+        <div
+          className={`tab-column ${tablaActiva === "backup" ? "active" : ""}`}
+          onClick={() => setTablaActiva("backup")}
+        >
+          Backup
+        </div>
+      </div>
 
       {showLoadingMessage && <LoadingModal />}
 
-      <PrinterTable
-        impresoras={impresoras}
-        tipo="principal"
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onInfo={(data) => setInfoModal({ visible: true, data })}
-      />
+      {tablaActiva === "principal" && (
+        <PrinterTable
+          impresoras={impresoras}
+          tipo="principal"
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onInfo={(data) => setInfoModal({ visible: true, data })}
+        />
+      )}
 
-      <PrinterTable
-        impresoras={impresoras}
-        tipo="backup"
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onInfo={(data) => setInfoModal({ visible: true, data })}
-      />
+      {tablaActiva === "backup" && (
+        <PrinterTable
+          impresoras={impresoras}
+          tipo="backup"
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onInfo={(data) => setInfoModal({ visible: true, data })}
+        />
+      )}
 
       {showModal && (
         <PrinterForm

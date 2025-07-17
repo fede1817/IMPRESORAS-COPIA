@@ -430,3 +430,36 @@ a:hover {
   font-size: 1rem;
   margin-top: 8px;
 }
+
+.tab-column-header {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  border-bottom: 2px solid #444;
+}
+
+.tab-column {
+  flex: 1;
+  text-align: center;
+  padding: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: #2c2c2c;
+  color: #aaa;
+  transition: color 0.3s, border-bottom 0.3s;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-column:hover {
+  color: white;
+}
+
+.tab-column.active {
+  color: white;
+  border-bottom: 3px solid #3085d6;
+}
+
+
+.tab-btn.active {
+  background-color: #3085d6;
+}
