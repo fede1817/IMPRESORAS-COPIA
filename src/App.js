@@ -1,8 +1,9 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 import PrinterTable from "./components/PrinterTable";
 import PrinterForm from "./components/PrinterForm";
 import InfoModal from "./components/InfoModal";
+import LoadingModal from "./components/LoadingModal";
 import Swal from "sweetalert2";
 
 function App() {
@@ -19,17 +20,13 @@ function App() {
   const [editingId, setEditingId] = useState(null);
   const [infoModal, setInfoModal] = useState({ visible: false, data: null });
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
-  const topRef = useRef(null);
 
-  // ✅ FUNCION para cargar impresoras
+  // ✅ Función para cargar impresoras
   const fetchImpresoras = (showMessage = false) => {
     if (showMessage) {
       setShowLoadingMessage(true);
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
     }
+
     fetch("http://192.168.8.166:3001/api/toners")
       .then((res) => res.json())
       .then((data) => setImpresoras(data.impresoras || []))
@@ -94,7 +91,7 @@ function App() {
         confirmButtonColor: "#3085d6",
       });
 
-      fetchImpresoras(true); // ⏳ Mostrar spinner y hacer scroll
+      fetchImpresoras(true); // ⏳ Mostrar spinner
 
       // Limpiar y cerrar modal
       setShowModal(false);
@@ -140,15 +137,18 @@ function App() {
           method: "DELETE",
         });
 
-        fetchImpresoras(true); // ⏳ Mostrar spinner y hacer scroll
-
-        Swal.fire({
+        // ✅ Primero mostrar el mensaje de éxito
+        await Swal.fire({
           title: "¡Eliminado!",
           text: "La impresora fue eliminada correctamente.",
           icon: "success",
           background: "#2c2c2c",
           color: "#fff",
+          confirmButtonColor: "#3085d6",
         });
+
+        // ✅ Después mostrar spinner y recargar datos
+        fetchImpresoras(true);
       } catch (error) {
         console.error("Error al eliminar la impresora:", error);
         Swal.fire({
@@ -177,19 +177,13 @@ function App() {
 
   return (
     <div className="App dark-mode">
-      <div ref={topRef}>
-        <h1>Estado de las impresoras Ricoh</h1>
-      </div>
+      <h1>Estado de las impresoras Ricoh</h1>
+
       <button className="add-btn" onClick={() => setShowModal(true)}>
-        Agregar impresora
+        ➕Agregar impresora
       </button>
 
-      {showLoadingMessage && (
-        <div style={{ textAlign: "center", marginTop: "30px" }}>
-          <div className="spinner" />
-          <p className="loading-text">Cargando impresoras...</p>
-        </div>
-      )}
+      {showLoadingMessage && <LoadingModal />}
 
       <PrinterTable
         impresoras={impresoras}
