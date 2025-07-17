@@ -19,6 +19,7 @@ export default function PrinterTable({
             <th>Nivel de Tóner Negro</th>
             <th>Info</th>
             <th>Acciones</th>
+            <th>Pedido</th>
           </tr>
         </thead>
         <tbody>
@@ -72,6 +73,15 @@ export default function PrinterTable({
                       Eliminar
                     </button>
                   </div>
+                </td>
+                <td>
+                  <button
+                    className="pedido-btn"
+                    //onClick={() => handleCopyPedido(impresora)}
+                    title="Generar pedido de tóner"
+                  >
+                    📋
+                  </button>
                 </td>
               </tr>
             ))}

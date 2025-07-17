@@ -463,3 +463,18 @@ a:hover {
 .tab-btn.active {
   background-color: #3085d6;
 }
+
+ .pedido-btn {
+  background-color: #0b6edf; /* Verde */
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.pedido-btn:hover {
+  background-color: #e8f0e8; /* blanco */
+}
