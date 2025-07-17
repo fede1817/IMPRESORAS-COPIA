@@ -52,6 +52,7 @@ export default function PrinterForm({
           <select name="tipo" value={formData.tipo} onChange={onChange}>
             <option value="principal">Principal</option>
             <option value="backup">Backup</option>
+            <option value="comercial">Comercial</option>
           </select>
           <input
             type="number"

@@ -178,7 +178,7 @@ function App() {
 
   return (
     <div className="App dark-mode">
-      <h1>Estado de las impresoras Ricoh</h1>
+      <h1>PrinterManager</h1>
 
       <button className="add-btn" onClick={() => setShowModal(true)}>
         ➕Agregar impresora
@@ -198,29 +198,49 @@ function App() {
         >
           Backup
         </div>
+        <div
+          className={`tab-column ${
+            tablaActiva === "comercial" ? "active" : ""
+          }`}
+          onClick={() => setTablaActiva("comercial")}
+        >
+          Comercial
+        </div>
       </div>
 
       {showLoadingMessage && <LoadingModal />}
 
-      {tablaActiva === "principal" && (
-        <PrinterTable
-          impresoras={impresoras}
-          tipo="principal"
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onInfo={(data) => setInfoModal({ visible: true, data })}
-        />
-      )}
+      <div>
+        {tablaActiva === "principal" && (
+          <PrinterTable
+            impresoras={impresoras}
+            tipo="principal"
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onInfo={(data) => setInfoModal({ visible: true, data })}
+          />
+        )}
 
-      {tablaActiva === "backup" && (
-        <PrinterTable
-          impresoras={impresoras}
-          tipo="backup"
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onInfo={(data) => setInfoModal({ visible: true, data })}
-        />
-      )}
+        {tablaActiva === "backup" && (
+          <PrinterTable
+            impresoras={impresoras}
+            tipo="backup"
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onInfo={(data) => setInfoModal({ visible: true, data })}
+          />
+        )}
+
+        {tablaActiva === "comercial" && (
+          <PrinterTable
+            impresoras={impresoras}
+            tipo="comercial"
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onInfo={(data) => setInfoModal({ visible: true, data })}
+          />
+        )}
+      </div>
 
       {showModal && (
         <PrinterForm
