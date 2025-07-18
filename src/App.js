@@ -171,9 +171,75 @@ function App() {
       drivers_url: impresora.drivers_url,
       tipo: impresora.tipo,
       toner_reserva: impresora.toner_reserva,
+      direccion: impresora.direccion,
     });
     setEditingId(impresora.id);
     setShowModal(true);
+  };
+
+  const handleCopyPedido = async (impresora) => {
+    // Preparar los datos del pedido
+    const pedidoData = {
+      impresora_id: impresora.id,
+      modelo: impresora.modelo,
+      numero_serie: impresora.numero_serie ?? "N/A", // CAMBIO: Usar impresora.numero_serie en lugar de impresora.info?.numero_serie
+      contador_total: impresora.contador_paginas ?? "N/A", // CAMBIO: Usar impresora.contador_paginas en lugar de impresora.info?.contador
+      nombre: impresora.sucursal || "Sucursal Desconocida",
+      direccion: impresora.direccion || "Dirección no especificada",
+      telefono: "0987 200316",
+      correo: "bryan.medina@surcomercial.com.py",
+      ultimo_pedido_fecha: impresora.ultimo_pedido_fecha,
+    };
+
+    let fechaFormateada = "N/A";
+    if (pedidoData.ultimo_pedido_fecha) {
+      const fecha = new Date(pedidoData.ultimo_pedido_fecha);
+      const dia = String(fecha.getDate()).padStart(2, "0");
+      const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+      const anio = String(fecha.getFullYear()).slice(-2);
+      fechaFormateada = `${dia}/${mes}/${anio}`;
+    }
+    // Texto que se copiará al portapapeles
+    const textoParaCopiar = `
+Sucursal: ${pedidoData.nombre}
+Modelo: ${pedidoData.modelo}
+Número de Serie: ${pedidoData.numero_serie}
+Contador: ${pedidoData.contador_total}
+Dirección: ${pedidoData.direccion}
+Teléfono: ${pedidoData.telefono}
+Correo: ${pedidoData.correo}
+Ultimo Pedido: ${fechaFormateada}
+    `.trim();
+
+    // Mostrar diálogo de confirmación
+    const confirmacion = window.confirm(
+      `¿Confirmas el pedido de tóner para:\n\n${textoParaCopiar}`
+    );
+
+    if (confirmacion) {
+      try {
+        // Copiar al portapapeles
+        await navigator.clipboard.writeText(textoParaCopiar);
+
+        // Enviar al backend
+        const response = await fetch("http://192.168.8.166:3001/api/pedido", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ impresora_id: pedidoData.impresora_id }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Error al guardar el pedido en el backend");
+        }
+
+        // Mostrar mensaje de éxito
+        alert("✅ Pedido confirmado y datos copiados al portapapeles.");
+        fetchImpresoras(true);
+      } catch (error) {
+        console.error("Error al procesar el pedido:", error);
+        alert("❌ Error al procesar el pedido. Por favor, intenta de nuevo.");
+      }
+    }
   };
 
   return (
@@ -218,6 +284,7 @@ function App() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onInfo={(data) => setInfoModal({ visible: true, data })}
+            onCopy={handleCopyPedido}
           />
         )}
 
@@ -228,6 +295,7 @@ function App() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onInfo={(data) => setInfoModal({ visible: true, data })}
+            onCopy={handleCopyPedido}
           />
         )}
 
@@ -238,6 +306,7 @@ function App() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onInfo={(data) => setInfoModal({ visible: true, data })}
+            onCopy={handleCopyPedido}
           />
         )}
       </div>

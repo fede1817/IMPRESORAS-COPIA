@@ -7,6 +7,7 @@ export default function PrinterTable({
   onEdit,
   onDelete,
   onInfo,
+  onCopy,
 }) {
   return (
     <>
@@ -77,7 +78,7 @@ export default function PrinterTable({
                 <td>
                   <button
                     className="pedido-btn"
-                    //onClick={() => handleCopyPedido(impresora)}
+                    onClick={() => onCopy(impresora)}
                     title="Generar pedido de tóner"
                   >
                     📋

@@ -37,6 +37,12 @@ export default function InfoModal({ visible, data, onClose }) {
           <p>
             <strong>Tóner de reserva:</strong> {data.toner_reserva || 0}
           </p>
+          <p>
+            <strong>Último Pedido:</strong>{" "}
+            {data.ultimo_pedido_fecha
+              ? new Date(data.ultimo_pedido_fecha).toLocaleString()
+              : "N/A"}
+          </p>
         </div>
       </div>
     </div>

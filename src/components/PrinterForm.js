@@ -61,6 +61,13 @@ export default function PrinterForm({
             value={formData.toner_reserva}
             onChange={onChange}
           />
+          <input
+            name="direccion"
+            placeholder="direccion"
+            value={formData.direccion}
+            onChange={onChange}
+            required
+          />
 
           <div className="printer-form-buttons">
             <button type="submit" className="submit-btn">
