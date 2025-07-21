@@ -178,12 +178,11 @@ function App() {
   };
 
   const handleCopyPedido = async (impresora) => {
-    // Preparar los datos del pedido
     const pedidoData = {
       impresora_id: impresora.id,
       modelo: impresora.modelo,
-      numero_serie: impresora.numero_serie ?? "N/A", // CAMBIO: Usar impresora.numero_serie en lugar de impresora.info?.numero_serie
-      contador_total: impresora.contador_paginas ?? "N/A", // CAMBIO: Usar impresora.contador_paginas en lugar de impresora.info?.contador
+      numero_serie: impresora.numero_serie ?? "N/A",
+      contador_total: impresora.contador_paginas ?? "N/A",
       nombre: impresora.sucursal || "Sucursal Desconocida",
       direccion: impresora.direccion || "Dirección no especificada",
       telefono: "0987 200316",
@@ -199,7 +198,7 @@ function App() {
       const anio = String(fecha.getFullYear()).slice(-2);
       fechaFormateada = `${dia}/${mes}/${anio}`;
     }
-    // Texto que se copiará al portapapeles
+
     const textoParaCopiar = `
 Sucursal: ${pedidoData.nombre}
 Modelo: ${pedidoData.modelo}
@@ -208,15 +207,27 @@ Contador: ${pedidoData.contador_total}
 Dirección: ${pedidoData.direccion}
 Teléfono: ${pedidoData.telefono}
 Correo: ${pedidoData.correo}
-Ultimo Pedido: ${fechaFormateada}
-    `.trim();
+Último Pedido: ${fechaFormateada}
+  `.trim();
 
-    // Mostrar diálogo de confirmación
-    const confirmacion = window.confirm(
-      `¿Confirmas el pedido de tóner para:\n\n${textoParaCopiar}`
-    );
+    // Mostrar confirmación con SweetAlert2
+    const confirmacion = await Swal.fire({
+      title: "¿Confirmar pedido de tóner?",
+      html: `<pre style="text-align:left">${textoParaCopiar}</pre>`,
+      icon: "question",
+      background: "#2c2c2c",
+      color: "#fff",
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      showCancelButton: true,
+      confirmButtonText: "Confirmar",
+      cancelButtonText: "Cancelar",
+      customClass: {
+        popup: "swal2-popup swal2-preformatted-text",
+      },
+    });
 
-    if (confirmacion) {
+    if (confirmacion.isConfirmed) {
       try {
         // Copiar al portapapeles
         await navigator.clipboard.writeText(textoParaCopiar);
@@ -232,12 +243,26 @@ Ultimo Pedido: ${fechaFormateada}
           throw new Error("Error al guardar el pedido en el backend");
         }
 
-        // Mostrar mensaje de éxito
-        alert("✅ Pedido confirmado y datos copiados al portapapeles.");
+        // Éxito
+        await Swal.fire({
+          icon: "success",
+          title: "Pedido confirmado",
+          text: "Los datos fueron copiados al portapapeles y enviados correctamente.",
+          background: "#2c2c2c",
+          color: "#fff",
+          confirmButtonColor: "#3085d6",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+
         fetchImpresoras(true);
       } catch (error) {
         console.error("Error al procesar el pedido:", error);
-        alert("❌ Error al procesar el pedido. Por favor, intenta de nuevo.");
+        await Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Ocurrió un error al procesar el pedido. Intenta nuevamente.",
+        });
       }
     }
   };

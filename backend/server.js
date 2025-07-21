@@ -115,7 +115,7 @@ app.get("/api/toners", async (req, res) => {
         return {
           ...impresora,
           toner: resultado.toner,
-          contador: resultado.contador, // 👈 Agregado
+          contador_paginas: resultado.contador, // 👈 Agregado
           numero_serie: resultado.numero_serie, // 👈 Agregado
           error: resultado.error,
         };

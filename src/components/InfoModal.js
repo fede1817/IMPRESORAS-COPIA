@@ -23,7 +23,7 @@ export default function InfoModal({ visible, data, onClose }) {
             <strong>Tipo:</strong> {data.tipo}
           </p>
           <p>
-            <strong>Contador:</strong> {data?.contador ?? "N/A"}
+            <strong>Contador:</strong> {data?.contador_paginas ?? "N/A"}
           </p>
           <p>
             <strong>Número de Serie:</strong> {data?.numero_serie || "N/A"}
