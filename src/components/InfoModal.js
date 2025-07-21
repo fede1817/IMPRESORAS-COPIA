@@ -29,13 +29,13 @@ export default function InfoModal({ visible, data, onClose }) {
             <strong>Número de Serie:</strong> {data?.numero_serie || "N/A"}
           </p>
           <p>
+            <strong>Tóner de reserva:</strong> {data.toner_reserva || 0}
+          </p>
+          <p>
             <strong>Último cambio de tóner:</strong>{" "}
             {data.fecha_ultimo_cambio
               ? new Date(data.fecha_ultimo_cambio).toLocaleString()
               : "N/A"}
-          </p>
-          <p>
-            <strong>Tóner de reserva:</strong> {data.toner_reserva || 0}
           </p>
           <p>
             <strong>Último Pedido:</strong>{" "}

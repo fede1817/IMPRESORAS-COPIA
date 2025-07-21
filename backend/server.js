@@ -32,38 +32,61 @@ app.post("/api/impresoras", async (req, res) => {
 });
 
 // OIDs SNMP comunes para impresoras
-const OID_TONER_NEGRO = "1.3.6.1.2.1.43.11.1.1.9.1.1"; // Tóner negro
-const OID_NUMERO_SERIE = "1.3.6.1.2.1.43.5.1.1.17.1"; // Número de serie
-const OID_CONTADOR_IMPRESIONES = "1.3.6.1.2.1.43.10.2.1.4.1.1"; // Contador de páginas
+const oids = [
+  "1.3.6.1.2.1.43.11.1.1.9.1.1", // toner negro
+  "1.3.6.1.2.1.43.5.1.1.17.1", // número de serie
+  "1.3.6.1.2.1.43.10.2.1.4.1.1", // contador total de páginas
+];
 
 function consultarToner(ip) {
   return new Promise((resolve) => {
-    const session = snmp.createSession(ip, "public", { timeout: 2000 });
-    const oids = [OID_TONER_NEGRO, OID_NUMERO_SERIE, OID_CONTADOR_IMPRESIONES];
+    const session = snmp.createSession(ip, "public", { timeout: 3000 });
 
-    session.get(oids, (error, varbinds) => {
-      if (error || !varbinds) {
-        resolve({
-          toner: null,
-          contador: null,
-          numero_serie: null,
-          error: true,
-        });
-      } else {
-        const toner = varbinds[0]?.value ?? null;
-        const numero_serie = varbinds[1]?.value?.toString() ?? null;
-        const contador = varbinds[2]?.value ?? null;
-        resolve({
-          toner,
-          numero_serie,
-          contador,
-          error: false,
-        });
-      }
+    try {
+      session.get(oids, (error, varbinds) => {
+        if (error) {
+          resolve({ error: true, mensaje: "Error SNMP: " + error.message });
+        } else {
+          const tonerRaw = varbinds[0]?.value;
+          const numeroSerieRaw = varbinds[1]?.value;
+          const contadorRaw = varbinds[2]?.value;
+
+          // Procesar valores
+          const toner =
+            tonerRaw !== null && !isNaN(tonerRaw)
+              ? parseInt(tonerRaw, 10)
+              : null;
+
+          const numero_serie = numeroSerieRaw
+            ? String(numeroSerieRaw).trim()
+            : null;
+
+          const contador =
+            contadorRaw !== null && !isNaN(contadorRaw)
+              ? parseInt(contadorRaw, 10)
+              : null;
+
+          // Validación final
+          if (toner === null && numero_serie === null && contador === null) {
+            resolve({
+              error: true,
+              mensaje: "No se pudo obtener información SNMP válida.",
+            });
+          } else {
+            resolve({ toner, numero_serie, contador });
+          }
+        }
+
+        session.close();
+      });
+    } catch (err) {
+      resolve({ error: true, mensaje: "Excepción SNMP: " + err.message });
       session.close();
-    });
+    }
   });
 }
+
+module.exports = consultarToner;
 
 setInterval(async () => {
   try {
