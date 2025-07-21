@@ -210,7 +210,6 @@ Correo: ${pedidoData.correo}
 Último Pedido: ${fechaFormateada}
   `.trim();
 
-    // Mostrar confirmación con SweetAlert2
     const confirmacion = await Swal.fire({
       title: "¿Confirmar pedido de tóner?",
       html: `<pre style="text-align:left">${textoParaCopiar}</pre>`,
@@ -229,10 +228,25 @@ Correo: ${pedidoData.correo}
 
     if (confirmacion.isConfirmed) {
       try {
-        // Copiar al portapapeles
-        await navigator.clipboard.writeText(textoParaCopiar);
+        // ✅ Copiar al portapapeles con fallback
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(textoParaCopiar);
+        } else {
+          const textArea = document.createElement("textarea");
+          textArea.value = textoParaCopiar;
+          textArea.style.position = "fixed"; // evita scroll
+          textArea.style.opacity = "0";
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
 
-        // Enviar al backend
+          const exito = document.execCommand("copy");
+          document.body.removeChild(textArea);
+
+          if (!exito) throw new Error("No se pudo copiar con fallback");
+        }
+
+        // ✅ Enviar pedido al backend
         const response = await fetch("http://192.168.8.166:3001/api/pedido", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -243,7 +257,6 @@ Correo: ${pedidoData.correo}
           throw new Error("Error al guardar el pedido en el backend");
         }
 
-        // Éxito
         await Swal.fire({
           icon: "success",
           title: "Pedido confirmado",
@@ -262,6 +275,10 @@ Correo: ${pedidoData.correo}
           icon: "error",
           title: "Error",
           text: "Ocurrió un error al procesar el pedido. Intenta nuevamente.",
+          background: "#2c2c2c",
+          color: "#fff",
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
         });
       }
     }
