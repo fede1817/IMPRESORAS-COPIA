@@ -91,6 +91,7 @@ module.exports = consultarToner;
 setInterval(async () => {
   try {
     const { rows: impresoras } = await pool.query("SELECT * FROM impresoras");
+    console.log("cod ejecutado");
 
     for (const impresora of impresoras) {
       const resultado = await consultarToner(impresora.ip);
@@ -206,7 +207,8 @@ app.put("/api/pedido", async (req, res) => {
   try {
     await pool.query(
       `UPDATE impresoras 
-       SET ultimo_pedido_fecha = NOW()
+       SET ultimo_pedido_fecha = NOW(),
+       toner_reserva = toner_reserva + 1
        WHERE id = $1`,
       [impresora_id]
     );
