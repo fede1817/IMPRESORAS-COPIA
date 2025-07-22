@@ -91,7 +91,6 @@ module.exports = consultarToner;
 setInterval(async () => {
   try {
     const { rows: impresoras } = await pool.query("SELECT * FROM impresoras");
-    console.log("cod ejecutado");
 
     for (const impresora of impresoras) {
       const resultado = await consultarToner(impresora.ip);
