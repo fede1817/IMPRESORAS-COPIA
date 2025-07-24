@@ -48,7 +48,7 @@ export default function PrinterTable({
                   </a>
                 </td>
                 <td>
-                  <TonerBar value={impresora.toner} error={impresora.error} />
+                  <TonerBar value={impresora.toner_anterior} />
                 </td>
                 <td>
                   <button

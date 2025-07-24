@@ -34,13 +34,22 @@ function App() {
       .catch((err) => console.error("Error al obtener datos:", err))
       .finally(() => {
         if (showMessage) {
-          setTimeout(() => setShowLoadingMessage(false), 1000); // Oculta luego de 1 segundo
+          setTimeout(() => setShowLoadingMessage(false), 500); // Oculta inmediatamente
         }
       });
   };
 
   useEffect(() => {
+    // 🟢 Carga inicial
     fetchImpresoras();
+
+    // 🔁 Refresca automáticamente cada 5 minutos (300000 ms)
+    const interval = setInterval(() => {
+      fetchImpresoras();
+    }, 300000);
+
+    // 🔴 Limpia el intervalo si el componente se desmonta
+    return () => clearInterval(interval);
   }, []);
 
   const handleInputChange = (e) => {
