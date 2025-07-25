@@ -48,7 +48,11 @@ export default function PrinterTable({
                   </a>
                 </td>
                 <td>
-                  <TonerBar value={impresora.toner_anterior} />
+                  {impresora.toner_anterior <= 0 ? (
+                    "No disponible"
+                  ) : (
+                    <TonerBar value={impresora.toner_anterior} />
+                  )}
                 </td>
                 <td>
                   <button
