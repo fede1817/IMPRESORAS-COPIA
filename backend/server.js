@@ -23,6 +23,18 @@ const oids = [
   "1.3.6.1.2.1.43.10.2.1.4.1.1", // Contador total de páginas
 ];
 
+const nodemailer = require("nodemailer");
+
+const transporter = nodemailer.createTransport({
+  host: "mail.surcomercial.com.py", // ejemplo: mail.zimbra.tuempresa.com
+  port: 587,
+  secure: false, // usa true si tienes SSL en puerto 465
+  auth: {
+    user: "federico.britez@surcomercial.com.py", // correo desde donde se envía
+    pass: "Surcomercial.fbb",
+  },
+});
+
 function consultarToner(ip) {
   return new Promise((resolve) => {
     const session = snmp.createSession(ip, "public", { timeout: 3000 });
@@ -64,7 +76,13 @@ setInterval(async () => {
       if (!resultado.error && resultado.toner !== null) {
         const tonerActual = resultado.toner;
         const tonerAnterior = impresora.toner_anterior;
+        const ahora = new Date();
+        const ultimaAlerta = impresora.ultima_alerta;
+        const pasaron7Dias =
+          !ultimaAlerta ||
+          ahora - new Date(ultimaAlerta) > 7 * 24 * 60 * 60 * 1000;
 
+        // ACTUALIZACIÓN DE TÓNER Y CONTADOR
         if (tonerAnterior !== null && tonerActual > tonerAnterior) {
           await pool.query(
             `UPDATE impresoras SET
@@ -97,6 +115,59 @@ setInterval(async () => {
             ]
           );
         }
+
+        // ENVÍO DE CORREO SI EL TÓNER ES BAJO
+        if (
+          tonerActual !== null &&
+          tonerActual > 0 &&
+          tonerActual <= 20 &&
+          pasaron7Dias
+        ) {
+          const correoDestino = "bryan.medina@surcomercial.com.py"; // Cambiar si se requiere
+
+          const info = {
+            modelo: impresora.modelo,
+            numero_serie: resultado.numero_serie ?? "N/A",
+            contador_total: resultado.contador ?? "N/A",
+            sucursal: impresora.sucursal || "Sucursal Desconocida",
+            direccion: impresora.direccion || "Dirección no especificada",
+            telefono: "0987 200316",
+            correo: "bryan.medina@surcomercial.com.py",
+            tipo: impresora.tipo,
+          };
+
+          const htmlBody = `
+            <h3>⚠ Nivel bajo de tóner detectado ${tonerAnterior}%</h3>
+            <h3>⚠ tipo ${impresora.tipo}</h3>
+            <h3>⚠ ip: ${impresora.ip}</h3>
+            <ul>
+              <li><strong>Sucursal:</strong> ${info.sucursal}</li>
+              <li><strong>Dirección:</strong> ${info.direccion}</li>
+              <li><strong>Modelo:</strong> ${info.modelo}</li>
+              <li><strong>N° de serie:</strong> ${info.numero_serie}</li>
+              <li><strong>Contador total:</strong> ${info.contador_total}</li>
+              <li><strong>Teléfono:</strong> ${info.telefono}</li>
+              <li><strong>Correo:</strong> ${info.correo}</li>
+            </ul>
+          `;
+
+          await transporter.sendMail({
+            from: '"Alerta de Tóner" <federico.britez@surcomercial.com.py>',
+            to: correoDestino,
+            cc: ["federico.britez@surcomercial.com.py"],
+            subject: `🖨 Tóner bajo en ${info.sucursal} - ${info.modelo} - ${info.tipo}`,
+            html: htmlBody,
+          });
+
+          await pool.query(
+            `UPDATE impresoras SET ultima_alerta = NOW() WHERE id = $1`,
+            [impresora.id]
+          );
+
+          console.log(
+            `📧 Alerta enviada para ${info.modelo} (${info.sucursal})`
+          );
+        }
       }
     }
 
@@ -104,7 +175,7 @@ setInterval(async () => {
   } catch (error) {
     console.error("❌ Error en actualización SNMP:", error);
   }
-}, 5 * 60 * 1000); // Cada 5 minutos
+}, 5 * 60 * 1000); // cada 5 minutos
 
 // 🔵 Agregar impresora
 app.post("/api/impresoras", async (req, res) => {
