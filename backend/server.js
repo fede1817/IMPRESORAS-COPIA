@@ -137,7 +137,7 @@ setInterval(async () => {
           };
 
           const htmlBody = `
-            <h3>⚠ Nivel bajo de tóner detectado ${tonerAnterior}%</h3>
+            <h3>⚠ Nivel bajo de tóner detectado ${tonerActual}%</h3>
             <h3>⚠ tipo ${impresora.tipo}</h3>
             <h3>⚠ ip: ${impresora.ip}</h3>
             <ul>
