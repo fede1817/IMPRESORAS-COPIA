@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const snmp = require("net-snmp");
 const { Pool } = require("pg");
+const ping = require("ping");
 
 const app = express();
 const PORT = 3001;
@@ -33,6 +34,25 @@ const transporter = nodemailer.createTransport({
     user: "federico.britez@surcomercial.com.py", // correo desde donde se envía
     pass: "Surcomercial.fbb",
   },
+});
+
+app.post("/ping", async (req, res) => {
+  const { host } = req.body;
+
+  if (!host) {
+    return res.status(400).json({ error: "Debes enviar un host o IP" });
+  }
+
+  try {
+    const result = await ping.promise.probe(host, { timeout: 5 });
+    res.json({
+      host: result.host,
+      alive: result.alive,
+      time: result.time,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error al hacer ping" });
+  }
 });
 
 function consultarToner(ip) {

@@ -5,6 +5,7 @@ import PrinterForm from "./components/PrinterForm";
 import InfoModal from "./components/InfoModal";
 import LoadingModal from "./components/LoadingModal";
 import Swal from "sweetalert2";
+import Ping from "./components/Ping";
 
 function App() {
   const [impresoras, setImpresoras] = useState([]);
@@ -361,6 +362,8 @@ Correo: ${pedidoData.correo}
           />
         )}
       </div>
+
+      <Ping />
 
       {showModal && (
         <PrinterForm
