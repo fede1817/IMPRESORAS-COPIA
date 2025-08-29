@@ -1,5 +1,10 @@
 import React from "react";
 import TonerBar from "./TonerBar";
+import { FaRegEdit } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { FaCartShopping } from "react-icons/fa6";
+
+import { BsInfoCircleFill } from "react-icons/bs";
 
 export default function PrinterTable({
   impresoras,
@@ -60,24 +65,24 @@ export default function PrinterTable({
                     onClick={() => onInfo(impresora)}
                     title="Ver información"
                   >
-                    ℹ
+                    <BsInfoCircleFill />
                   </button>
                 </td>
                 <td>
-                  <div className="action-buttons">
-                    <button
-                      className="edit-btn"
-                      onClick={() => onEdit(impresora)}
-                    >
-                      Editar
-                    </button>
-                    <button
-                      className="delete-btn"
-                      onClick={() => onDelete(impresora.id)}
-                    >
-                      Eliminar
-                    </button>
-                  </div>
+                  <button
+                    className="edit-btn"
+                    title="Editar Impresora"
+                    onClick={() => onEdit(impresora)}
+                  >
+                    <FaRegEdit />
+                  </button>
+                  <button
+                    className="delete-btn"
+                    title="Eliminar Impresora"
+                    onClick={() => onDelete(impresora.id)}
+                  >
+                    <RiDeleteBin6Line />
+                  </button>
                 </td>
                 <td>
                   <button
@@ -85,7 +90,7 @@ export default function PrinterTable({
                     onClick={() => onCopy(impresora)}
                     title="Generar pedido de tóner"
                   >
-                    📋
+                    <FaCartShopping />
                   </button>
                 </td>
               </tr>

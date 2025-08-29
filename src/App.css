@@ -318,44 +318,46 @@ a:hover {
 /* Contenedor de botones alineado y elegante */
 .action-buttons {
   display: flex;
-  gap: 8px;
+  gap: 4px;
   justify-content: center; /* Alinea hacia la izquierda */
   align-items: center;
 }
 
 /* Botón de eliminar (rojo) */
+/* Botón de eliminar (rojo) */
 .delete-btn {
-  background-color: #e53935;
-  color: white;
+  background-color: transparent;
+  color: #e53935;
   border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 12px 20px; /* Más grande */
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 20px; /* Tamaño de fuente más grande */
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .delete-btn:hover {
-  background-color: #c62828;
-  transform: scale(1.05);
+  color: #b71c1c;
+  transform: scale(1.2);
 }
 
 /* Botón de editar (verde) */
 .edit-btn {
-  background-color: #43a047;
-  color: white;
+  background-color: transparent;
+  color: #42b346;
   border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 12px 20px; /* Más grande */
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-size: 20px; /* Más grande */
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .edit-btn:hover {
-  background-color: #317a34;
-  transform: scale(1.05);
+  color: #317a34;
+  transform: scale(1.2);
 }
+
 
 /* Fila editada */
 .editing-row {
@@ -365,21 +367,19 @@ a:hover {
 }
 
 .info-button {
-  background-color: #0d6efd;
-  color: white;
+background-color: transparent;
+  color: #025FF5;
   border: none;
-  border-radius: 50%;
-  font-size: 1.1rem;
-  width: 36px;
-  height: 36px;
+  padding: 12px 20px; /* Más grande */
+  border-radius: 10px;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  font-size: 27px; /* Más grande */
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .info-button:hover {
-  background-color: #0b5ed7;
-  transform: scale(1.1);
+color: #0644a7;
+  transform: scale(1.2);
 }
 
 .dark-table th,
@@ -465,16 +465,17 @@ a:hover {
 }
 
  .pedido-btn {
-  background-color: #0b6edf; /* Verde */
-  color: white;
+background-color: transparent;
+  color: #F5A502;
   border: none;
-  padding: 5px 10px;
+  padding: 12px 20px; /* Más grande */
+  border-radius: 10px;
   cursor: pointer;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: background-color 0.2s;
+  font-size: 22px; /* Más grande */
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .pedido-btn:hover {
-  background-color: #e8f0e8; /* blanco */
+  color: hsl(40, 89%, 31%);
+  transform: scale(1.2);
 }

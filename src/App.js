@@ -6,6 +6,7 @@ import InfoModal from "./components/InfoModal";
 import LoadingModal from "./components/LoadingModal";
 import Swal from "sweetalert2";
 import Ping from "./components/Ping";
+import { IoIosAdd } from "react-icons/io";
 
 function App() {
   const [impresoras, setImpresoras] = useState([]);
@@ -299,7 +300,8 @@ Correo: ${pedidoData.correo}
       <h1>PrinterManager</h1>
 
       <button className="add-btn" onClick={() => setShowModal(true)}>
-        ➕Agregar impresora
+        <IoIosAdd />
+        Agregar impresora
       </button>
       <div className="tab-column-header">
         <div
