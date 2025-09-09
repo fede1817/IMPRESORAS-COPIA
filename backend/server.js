@@ -103,30 +103,55 @@ setInterval(async () => {
           ahora - new Date(ultimaAlerta) > 7 * 24 * 60 * 60 * 1000;
 
         // ACTUALIZACIÓN DE TÓNER Y CONTADOR
-        if (tonerAnterior !== null && tonerActual > tonerAnterior) {
-          await pool.query(
-            `UPDATE impresoras SET
-              cambios_toner = cambios_toner + 1,
-              fecha_ultimo_cambio = NOW(),
-              toner_anterior = $1,
-              toner_reserva = GREATEST(toner_reserva - 1, 0),
-              numero_serie = $2,
-              contador_paginas = $3
-             WHERE id = $4`,
-            [
-              tonerActual,
-              resultado.numero_serie,
-              resultado.contador,
-              impresora.id,
-            ]
-          );
+        // Reemplaza la lógica de detección de cambio de tóner con esto:
+        if (tonerAnterior !== null) {
+          const diferencia = Math.abs(tonerActual - tonerAnterior);
+
+          // Detectar cambio de tóner: aumento significativo (más del 50%)
+          if (tonerActual > tonerAnterior && diferencia > 50) {
+            await pool.query(
+              `UPDATE impresoras SET
+                cambios_toner = cambios_toner + 1,
+                fecha_ultimo_cambio = NOW(),
+                toner_anterior = $1,
+                toner_reserva = GREATEST(toner_reserva - 1, 0),
+                numero_serie = $2,
+                contador_paginas = $3
+            WHERE id = $4`,
+              [
+                tonerActual,
+                resultado.numero_serie,
+                resultado.contador,
+                impresora.id,
+              ]
+            );
+            console.log(
+              `🔄 Cambio de tóner detectado en ${impresora.ip}: ${tonerAnterior}% → ${tonerActual}%`
+            );
+          } else if (diferencia > 5) {
+            // Actualizar solo si hay cambio significativo
+            await pool.query(
+              `UPDATE impresoras SET
+                toner_anterior = $1,
+                numero_serie = $2,
+                contador_paginas = $3
+            WHERE id = $4`,
+              [
+                tonerActual,
+                resultado.numero_serie,
+                resultado.contador,
+                impresora.id,
+              ]
+            );
+          }
         } else {
+          // Primera lectura, solo establecer valores iniciales
           await pool.query(
             `UPDATE impresoras SET
-              toner_anterior = $1,
-              numero_serie = $2,
-              contador_paginas = $3
-             WHERE id = $4`,
+            toner_anterior = $1,
+            numero_serie = $2,
+            contador_paginas = $3
+        WHERE id = $4`,
             [
               tonerActual,
               resultado.numero_serie,
