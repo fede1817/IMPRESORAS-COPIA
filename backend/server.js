@@ -3,6 +3,13 @@ const cors = require("cors");
 const snmp = require("net-snmp");
 const { Pool } = require("pg");
 const ping = require("ping");
+const multer = require("multer");
+const { exec } = require("child_process");
+const net = require("net");
+const fs = require("fs");
+const path = require("path");
+const { PDFDocument } = require("pdf-lib");
+const upload = multer({ dest: "uploads/" }); // carpeta temporal
 
 const app = express();
 const PORT = 3001;
@@ -25,6 +32,114 @@ const oids = [
 ];
 
 const nodemailer = require("nodemailer");
+
+// Convertir Word a PDF con LibreOffice
+function convertWordToPdf(inputPath, outputDir) {
+  return new Promise((resolve, reject) => {
+    // 🔹 Ruta absoluta al ejecutable de LibreOffice
+    const libreOfficePath = `"C:\\Program Files\\LibreOffice\\program\\soffice.exe"`;
+
+    const command = `${libreOfficePath} --headless --convert-to pdf "${inputPath}" --outdir "${outputDir}"`;
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error("❌ Error en conversión:", stderr);
+        return reject(error);
+      }
+      console.log("📄 Conversión salida:", stdout);
+
+      const outputFile = path.join(
+        outputDir,
+        path.basename(inputPath, path.extname(inputPath)) + ".pdf"
+      );
+      resolve(outputFile);
+    });
+  });
+}
+
+// Enviar archivo a impresora por puerto RAW 9100
+function sendToPrinter(printerIp, filePath) {
+  return new Promise((resolve, reject) => {
+    const client = new net.Socket();
+    client.connect(9100, printerIp, () => {
+      console.log(`📡 Conectado a impresora ${printerIp}`);
+      const fileStream = fs.createReadStream(filePath);
+
+      fileStream.on("data", (chunk) => client.write(chunk));
+      fileStream.on("end", () => {
+        console.log("✅ Archivo enviado a impresora");
+        client.end();
+        resolve();
+      });
+    });
+
+    client.on("error", (err) => {
+      reject(new Error("Error al imprimir: " + err.message));
+    });
+  });
+}
+
+// 🖨 Enviar archivo a imprimir
+app.post(
+  "/api/impresoras/:id/print",
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+
+      // Buscar impresora en la BD
+      const result = await pool.query(
+        "SELECT * FROM impresoras WHERE id = $1",
+        [id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Impresora no encontrada" });
+      }
+      const impresora = result.rows[0];
+
+      let filePath = req.file.path;
+      let isTempPdf = false;
+
+      // Si es Word (.docx), convertir a PDF primero
+      if (
+        req.file.mimetype ===
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      ) {
+        console.log("📄 Documento Word detectado, convirtiendo a PDF...");
+        filePath = await convertWordToPdf(filePath, "uploads/");
+        isTempPdf = true; // marcar para borrar luego
+      }
+
+      // Reescalar a A4 si es PDF
+      if (req.file.mimetype.includes("pdf") || isTempPdf) {
+        const pdfBytes = fs.readFileSync(filePath);
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+
+        const a4Width = 595.28; // puntos
+        const a4Height = 841.89;
+
+        pdfDoc.getPages().forEach((page) => {
+          page.setSize(a4Width, a4Height);
+        });
+
+        const a4PdfBytes = await pdfDoc.save();
+        fs.writeFileSync(filePath, a4PdfBytes);
+        console.log("📄 PDF reescalado a A4");
+      }
+
+      // Enviar a la impresora
+      await sendToPrinter(impresora.ip, filePath);
+
+      res.json({ success: true, message: "Archivo enviado a imprimir en A4" });
+
+      // Borrar archivo temporal si es Word convertido
+      if (isTempPdf) fs.unlink(filePath, () => {});
+    } catch (error) {
+      console.error("❌ Error en impresión:", error);
+      res.status(500).json({ error: "Error al imprimir: " + error.message });
+    }
+  }
+);
 
 const transporter = nodemailer.createTransport({
   host: "mail.surcomercial.com.py", // ejemplo: mail.zimbra.tuempresa.com
