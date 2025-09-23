@@ -329,7 +329,7 @@ a:hover {
   background-color: transparent;
   color: #e53935;
   border: none;
-  padding: 12px 20px; /* Más grande */
+  padding: 10px 10px; /* Más grande */
   border-radius: 10px;
   cursor: pointer;
   font-size: 20px; /* Tamaño de fuente más grande */
@@ -346,7 +346,7 @@ a:hover {
   background-color: transparent;
   color: #42b346;
   border: none;
-  padding: 12px 20px; /* Más grande */
+  padding: 10px 10px; /* Más grande */
   border-radius: 10px;
   cursor: pointer;
   font-size: 20px; /* Más grande */
@@ -468,7 +468,6 @@ color: #0644a7;
 background-color: transparent;
   color: #F5A502;
   border: none;
-  padding: 12px 20px; /* Más grande */
   border-radius: 10px;
   cursor: pointer;
   font-size: 22px; /* Más grande */
@@ -477,5 +476,21 @@ background-color: transparent;
 
 .pedido-btn:hover {
   color: hsl(40, 89%, 31%);
+  transform: scale(1.2);
+}
+
+.print-btn {
+background-color: transparent;
+  color: #02bcf5;
+  border: none;
+ padding: 10px 10px; /* Más grande */
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 22px; /* Más grande */
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.print-btn:hover {
+  color: hsl(207, 89%, 31%);
   transform: scale(1.2);
 }
