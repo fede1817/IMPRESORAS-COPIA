@@ -7,6 +7,7 @@ import LoadingModal from "./components/LoadingModal";
 import Swal from "sweetalert2";
 import Ping from "./components/Ping";
 import { IoIosAdd } from "react-icons/io";
+import ServerStatusTable from "./components/ServerStatusTable";
 
 function App() {
   const [impresoras, setImpresoras] = useState([]);
@@ -24,13 +25,15 @@ function App() {
   const [showLoadingMessage, setShowLoadingMessage] = useState(false);
   const [tablaActiva, setTablaActiva] = useState("principal");
 
+  const urls = "http://192.168.8.166:3001";
+
   // ✅ Función para cargar impresoras
   const fetchImpresoras = (showMessage = false) => {
     if (showMessage) {
       setShowLoadingMessage(true);
     }
 
-    fetch("http://192.168.8.166:3001/api/toners")
+    fetch(urls + "/api/toners")
       .then((res) => res.json())
       .then((data) => setImpresoras(data.impresoras || []))
       .catch((err) => console.error("Error al obtener datos:", err))
@@ -80,8 +83,8 @@ function App() {
 
     const method = editingId ? "PUT" : "POST";
     const url = editingId
-      ? `http://192.168.8.166:3001/api/impresoras/${editingId}`
-      : "http://192.168.8.166:3001/api/impresoras";
+      ? `${urls}/api/impresoras/${editingId}`
+      : `${urls}/api/impresoras`;
 
     try {
       const response = await fetch(url, {
@@ -145,7 +148,7 @@ function App() {
 
     if (result.isConfirmed) {
       try {
-        await fetch(`http://192.168.8.166:3001/api/impresoras/${id}`, {
+        await fetch(`${urls}/api/impresoras/${id}`, {
           method: "DELETE",
         });
 
@@ -258,7 +261,7 @@ Correo: ${pedidoData.correo}
         }
 
         // ✅ Enviar pedido al backend
-        const response = await fetch("http://192.168.8.166:3001/api/pedido", {
+        const response = await fetch(urls + "/api/pedido", {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ impresora_id: pedidoData.impresora_id }),
@@ -365,7 +368,7 @@ Correo: ${pedidoData.correo}
         )}
       </div>
 
-      <Ping />
+      <ServerStatusTable />
 
       {showModal && (
         <PrinterForm

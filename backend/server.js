@@ -451,6 +451,333 @@ app.put("/api/pedido", async (req, res) => {
   }
 });
 
+// 📊 RUTAS PARA SERVICIOS DE RED (SERVIDORES)
+
+// 🟢 Obtener todos los servidores/equipos de red
+app.get("/api/servidores", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM servidores ORDER BY id");
+    res.json({ servidores: result.rows });
+  } catch (error) {
+    console.error("❌ Error consultando servidores:", error);
+    res.status(500).json({ error: "Error al obtener servidores" });
+  }
+});
+
+// 🟢 Obtener servidor por ID
+app.get("/api/servidores/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query("SELECT * FROM servidores WHERE id = $1", [
+      id,
+    ]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Servidor no encontrado" });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("❌ Error consultando servidor:", error);
+    res.status(500).json({ error: "Error al obtener servidor" });
+  }
+});
+
+// 🟢 Agregar nuevo servidor/equipo
+app.post("/api/servidores", async (req, res) => {
+  const { ip, sucursal, nombre, tipo } = req.body;
+
+  if (!ip || !sucursal) {
+    return res.status(400).json({ error: "IP y Sucursal son requeridos" });
+  }
+
+  try {
+    // Verificar si la IP ya existe
+    const existing = await pool.query(
+      "SELECT id FROM servidores WHERE ip = $1",
+      [ip]
+    );
+    if (existing.rows.length > 0) {
+      return res.status(400).json({ error: "La IP ya existe en el sistema" });
+    }
+
+    // Hacer ping para verificar estado inicial
+    const pingResult = await ping.promise.probe(ip, { timeout: 5 });
+
+    const result = await pool.query(
+      `INSERT INTO servidores (ip, sucursal, nombre, tipo, estado, latencia, ultima_verificacion) 
+       VALUES ($1, $2, $3, $4, $5, $6, NOW()) RETURNING *`,
+      [
+        ip,
+        sucursal,
+        nombre || `Equipo ${ip}`,
+        tipo || "servidor",
+        pingResult.alive ? "activo" : "inactivo",
+        pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+      ]
+    );
+
+    res.status(201).json({
+      message: "Servidor agregado correctamente",
+      servidor: result.rows[0],
+    });
+  } catch (error) {
+    console.error("❌ Error al agregar servidor:", error);
+    res.status(500).json({ error: "Error al agregar servidor" });
+  }
+});
+
+// 🟠 Actualizar servidor
+app.put("/api/servidores/:id", async (req, res) => {
+  const { id } = req.params;
+  const { ip, sucursal, nombre, tipo } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE servidores SET 
+        ip = $1, sucursal = $2, nombre = $3, tipo = $4, updated_at = NOW()
+       WHERE id = $5 RETURNING *`,
+      [ip, sucursal, nombre, tipo, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Servidor no encontrado" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("❌ Error al actualizar servidor:", error);
+    res.status(500).json({ error: "Error al actualizar servidor" });
+  }
+});
+
+// 🔴 Eliminar servidor
+app.delete("/api/servidores/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await pool.query(
+      "DELETE FROM servidores WHERE id = $1 RETURNING *",
+      [id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Servidor no encontrado" });
+    }
+    res.json({ mensaje: "Servidor eliminado correctamente" });
+  } catch (error) {
+    console.error("❌ Error al eliminar servidor:", error);
+    res.status(500).json({ error: "Error al eliminar servidor" });
+  }
+});
+
+// 🔄 Verificar estado de un servidor específico (Ping)
+app.post("/api/servidores/:id/verificar", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // Obtener datos del servidor
+    const serverResult = await pool.query(
+      "SELECT * FROM servidores WHERE id = $1",
+      [id]
+    );
+    if (serverResult.rows.length === 0) {
+      return res.status(404).json({ error: "Servidor no encontrado" });
+    }
+
+    const servidor = serverResult.rows[0];
+
+    // Hacer ping
+    const pingResult = await ping.promise.probe(servidor.ip, { timeout: 5 });
+
+    // Actualizar estado en la base de datos
+    await pool.query(
+      `UPDATE servidores SET 
+        estado = $1, 
+        latencia = $2, 
+        ultima_verificacion = NOW() 
+       WHERE id = $3`,
+      [
+        pingResult.alive ? "activo" : "inactivo",
+        pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+        id,
+      ]
+    );
+
+    res.json({
+      servidor: servidor.ip,
+      estado: pingResult.alive ? "activo" : "inactivo",
+      latencia: pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+      timestamp: new Date().toISOString(), // ✅ siempre válido
+    });
+  } catch (error) {
+    console.error("❌ Error al verificar servidor:", error);
+    res.status(500).json({ error: "Error al verificar servidor" });
+  }
+});
+
+// 🔄 Verificar estado de todos los servidores
+app.post("/api/servidores/verificar-todos", async (req, res) => {
+  try {
+    const { rows: servidores } = await pool.query("SELECT * FROM servidores");
+    const resultados = [];
+
+    for (const servidor of servidores) {
+      try {
+        const pingResult = await ping.promise.probe(servidor.ip, {
+          timeout: 5,
+        });
+
+        await pool.query(
+          `UPDATE servidores SET 
+            estado = $1, 
+            latencia = $2, 
+            ultima_verificacion = NOW() 
+           WHERE id = $3`,
+          [
+            pingResult.alive ? "activo" : "inactivo",
+            pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+            servidor.id,
+          ]
+        );
+
+        resultados.push({
+          id: servidor.id,
+          ip: servidor.ip,
+          estado: pingResult.alive ? "activo" : "inactivo",
+          latencia: pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+          success: true,
+        });
+      } catch (error) {
+        resultados.push({
+          id: servidor.id,
+          ip: servidor.ip,
+          estado: "inactivo",
+          latencia: "Error",
+          success: false,
+          error: error.message,
+        });
+      }
+    }
+
+    res.json({
+      message: "Verificación completada",
+      resultados,
+    });
+  } catch (error) {
+    console.error("❌ Error al verificar todos los servidores:", error);
+    res.status(500).json({ error: "Error en la verificación masiva" });
+  }
+});
+
+// 📊 Estadísticas de servidores
+app.get("/api/servidores-estadisticas", async (req, res) => {
+  try {
+    const totalResult = await pool.query("SELECT COUNT(*) FROM servidores");
+    const activosResult = await pool.query(
+      "SELECT COUNT(*) FROM servidores WHERE estado = 'activo'"
+    );
+    const inactivosResult = await pool.query(
+      "SELECT COUNT(*) FROM servidores WHERE estado = 'inactivo'"
+    );
+
+    const porTipoResult = await pool.query(`
+      SELECT tipo, COUNT(*) as cantidad 
+      FROM servidores 
+      GROUP BY tipo
+    `);
+
+    const estadisticas = {
+      total: parseInt(totalResult.rows[0].count),
+      activos: parseInt(activosResult.rows[0].count),
+      inactivos: parseInt(inactivosResult.rows[0].count),
+      porcentajeSalud:
+        totalResult.rows[0].count > 0
+          ? Math.round(
+              (parseInt(activosResult.rows[0].count) /
+                parseInt(totalResult.rows[0].count)) *
+                100
+            )
+          : 0,
+      porTipo: porTipoResult.rows,
+    };
+
+    res.json(estadisticas);
+  } catch (error) {
+    console.error("❌ Error obteniendo estadísticas:", error);
+    res.status(500).json({ error: "Error al obtener estadísticas" });
+  }
+});
+
+// 🔄 Actualización automática cada 5 minutos
+setInterval(async () => {
+  try {
+    console.log("🔄 Iniciando actualización automática de servidores...");
+
+    const { rows: servidores } = await pool.query("SELECT * FROM servidores");
+    const resultados = [];
+
+    for (const servidor of servidores) {
+      try {
+        const pingResult = await ping.promise.probe(servidor.ip, {
+          timeout: 5,
+        });
+
+        await pool.query(
+          `UPDATE servidores SET 
+            estado = $1, 
+            latencia = $2, 
+            ultima_verificacion = NOW() 
+           WHERE id = $3`,
+          [
+            pingResult.alive ? "activo" : "inactivo",
+            pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+            servidor.id,
+          ]
+        );
+
+        resultados.push({
+          id: servidor.id,
+          ip: servidor.ip,
+          estado: pingResult.alive ? "activo" : "inactivo",
+          latencia: pingResult.alive ? `${pingResult.time}ms` : "Timeout",
+          success: true,
+        });
+
+        console.log(
+          `✅ ${servidor.ip} - ${pingResult.alive ? "Activo" : "Inactivo"}`
+        );
+      } catch (error) {
+        await pool.query(
+          `UPDATE servidores SET 
+            estado = 'inactivo', 
+            latencia = 'Error', 
+            ultima_verificacion = NOW() 
+           WHERE id = $1`,
+          [servidor.id]
+        );
+
+        resultados.push({
+          id: servidor.id,
+          ip: servidor.ip,
+          estado: "inactivo",
+          latencia: "Error",
+          success: false,
+          error: error.message,
+        });
+
+        console.log(`❌ ${servidor.ip} - Error: ${error.message}`);
+      }
+    }
+
+    const exitosos = resultados.filter((r) => r.success).length;
+    const total = resultados.length;
+    console.log(
+      `📊 Actualización completada: ${exitosos}/${total} servidores activos`
+    );
+  } catch (error) {
+    console.error("❌ Error en actualización automática:", error);
+  }
+}, 5 * 60 * 1000); // 5 minutos
+
+console.log("🕐 Actualización automática programada cada 5 minutos");
+
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🟢 Servidor activo en http://localhost:${PORT}`);
 });
