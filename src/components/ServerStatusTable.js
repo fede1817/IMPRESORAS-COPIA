@@ -59,38 +59,6 @@ const ServerStatusTable = () => {
     }
   };
 
-  // Iconos por tipo de equipo
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case "servidor":
-        return faServer;
-      case "switch":
-        return faNetworkWired;
-      case "router":
-        return faSitemap;
-      case "firewall":
-        return faShieldAlt;
-      default:
-        return faServer;
-    }
-  };
-
-  // Color por tipo de equipo
-  const getTypeColor = (type) => {
-    switch (type) {
-      case "servidor":
-        return "#3498db";
-      case "switch":
-        return "#9b59b6";
-      case "router":
-        return "#2ecc71";
-      case "firewall":
-        return "#e74c3c";
-      default:
-        return "#95a5a6";
-    }
-  };
-
   // Cargar servidores desde el backend
   const loadServers = async () => {
     try {
@@ -321,7 +289,7 @@ const ServerStatusTable = () => {
     const interval = setInterval(() => {
       console.log("🔄 Actualización automática iniciada");
       loadAllData();
-    }, 5 * 60 * 1000); // 5 minutos
+    }, 5 * 60 * 100); // 5 minutos
 
     return () => clearInterval(interval);
   }, []);

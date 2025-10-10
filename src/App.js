@@ -51,7 +51,7 @@ function App() {
     // 🔁 Refresca automáticamente cada 5 minutos (300000 ms)
     const interval = setInterval(() => {
       fetchImpresoras();
-    }, 300000);
+    }, 3000);
 
     // 🔴 Limpia el intervalo si el componente se desmonta
     return () => clearInterval(interval);
