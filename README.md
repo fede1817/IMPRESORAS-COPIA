@@ -1,4 +1,9 @@
-# Instrucciones para ejecutar el proyecto
+PRINTER MANAGER es una aplicación desarrollada con React (frontend) y Node.js (backend) que permite monitorear y administrar impresoras en red.
+El sistema utiliza la API SNMP para obtener información en tiempo real sobre los niveles de tóner, detectar cambios de cartuchos, y mantener un contador de tóneres de reserva.
+Además, el programa realiza comprobaciones de conectividad mediante ping para mostrar el estado de red de cada impresora.
+
+Aunque el proyecto fue diseñado principalmente para impresoras Ricoh, también es compatible con modelos HP y otras marcas que soporten SNMP.
+El objetivo principal es centralizar el monitoreo y gestión del estado de las impresoras, optimizando el control del suministro de tóner y el mantenimiento preventivo.
 
 ## Requisitos previos
 
@@ -17,7 +22,7 @@
 
 -Abrir PgAdmin
 
--Seleccionar la opción para restaurar la base de datos
+-Seleccionar la opción para restaurar la base de datos, el backup de base de datos esta en la carpeta database/init.sql
 
 -Elegir el archivo .sql en formato Plain para restaurar
 
